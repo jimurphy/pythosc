@@ -11,18 +11,19 @@ class EchoUDP(DatagramProtocol):
         numberOfFloats = 0
         numberOfStrings = 0
         
-        typeTagRegex = re.compile('\,[\S]*?\\0') #Not sure why these need
+        typeTagRegex = re.compile('\,[\S]*?\0') #Not sure why these need
         addressRegex = re.compile('\/[\S]*?\,')  #to be compiled every time...
 
         matchOscAddress = re.match(addressRegex, data, flags=0)
         searchOscTypetag = re.search(typeTagRegex, data, flags=0)
-        
+
         if matchOscAddress:
-            matchOscAddress = re.sub(',$','',matchOscAddress.group())
+            matchOscAddress = re.sub(',','',matchOscAddress.group())
             print "Address: ",matchOscAddress
+            data = data.replace(matchOscAddress, '')
         
         if searchOscTypetag:
-            searchOscTypetag = re.sub('^,','',searchOscTypetag.group())
+            searchOscTypetag = re.sub(',','',searchOscTypetag.group())
             print "Typetag: ", searchOscTypetag
             typeTagLength = (len(searchOscTypetag)-1)
             print typeTagLength
@@ -39,7 +40,8 @@ class EchoUDP(DatagramProtocol):
                     print "STRING TYPE FOUND AT", num
                     numberOfStrings = numberOfStrings + 1
                     self.unpackString(num)
-        
+            data = data.replace(searchOscTypetag, '')       
+            
         print numberOfInts, numberOfFloats, numberOfStrings       
 
     def unpackInt(self, position):
