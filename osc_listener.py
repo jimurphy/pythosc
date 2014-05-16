@@ -23,34 +23,38 @@ class EchoUDP(DatagramProtocol):
             data = data.replace(matchOscAddress, '')
         
         if searchOscTypetag:
-            searchOscTypetag = re.sub(',','',searchOscTypetag.group())
+            searchOscTypetag = re.sub(r',','',searchOscTypetag.group())
             print "Typetag: ", searchOscTypetag
             typeTagLength = (len(searchOscTypetag)-1)
+            data = data.replace(searchOscTypetag, '')                   
             print typeTagLength
             for num in range(0, typeTagLength):
                 if searchOscTypetag[num] == 'i':
                     print "INT TYPE FOUND AT", num
                     numberOfInts = numberOfInts + 1
-                    self.unpackInt(num)
+                    self.unpackInt(num, data)
                 elif searchOscTypetag[num] == 'f':
                     print "FLOAT TYPE FOUND AT", num
                     numberOfFloats = numberOfFloats + 1
-                    self.unpackFloat(num)
+                    self.unpackFloat(num, data)
                 elif searchOscTypetag[num] == 's':
                     print "STRING TYPE FOUND AT", num
                     numberOfStrings = numberOfStrings + 1
-                    self.unpackString(num)
-            data = data.replace(searchOscTypetag, '')       
-            
-        print numberOfInts, numberOfFloats, numberOfStrings       
-
-    def unpackInt(self, position):
+                    self.unpackString(num, data)
+        
+        nullRegex = re.sub(r',','',data) #Remove comma
+        nullRegex = re.sub(r'\0{1,}','/',nullRegex) #Many nulls to one slash
+        oscValues = nullRegex.split("/") # /x/y/z into [x, y, z]
+        del oscValues[0] # Unsure why.
+        print oscValues
+        
+    def unpackInt(self, position, datagram):
         print "unpacking int at position", position
 
-    def unpackFloat(self, position):
+    def unpackFloat(self, position, datagram):
         print "unpacking float at position", position
 
-    def unpackString(self, position):
+    def unpackString(self, position, datagram):
         print "unpacking string at position", position
 
 
