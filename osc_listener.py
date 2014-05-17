@@ -3,6 +3,7 @@
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 import re
+import struct
 
 class EchoUDP(DatagramProtocol):
     
@@ -46,7 +47,11 @@ class EchoUDP(DatagramProtocol):
         nullRegex = re.sub(r'\0{1,}','/',nullRegex) #Many nulls to one slash
         oscValues = nullRegex.split("/") # /x/y/z into [x, y, z]
         del oscValues[0] # Unsure why.
-        print oscValues
+        
+        paddedValue = oscValues[2]
+        padAmount = 4 - (len(oscValues[2]) % 4)
+        paddedValue = ("\0" * padAmount) + paddedValue
+        struct.unpack(">i", paddedValue)
         
     def unpackInt(self, position, datagram):
         print "unpacking int at position", position

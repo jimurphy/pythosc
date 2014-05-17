@@ -10,7 +10,7 @@ def sendOsc():
     #sender1.AddFloat(69.5)
     sender1.AddString("yolo")
     sender1.AddString("giggle")
-    sender1.AddInt(68)
+    sender1.AddInt(999)
     sender1.Transmit()
 
 while True:
