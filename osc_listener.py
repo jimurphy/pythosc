@@ -5,19 +5,23 @@ from twisted.internet import reactor
 import re
 import struct
 
+datagramlist = ''
+
 class EchoUDP(DatagramProtocol):
     
     def datagramReceived(self, data, address):
-        
+        global datagramlist
+        datagramlist = data
+
         def unpackInt(position, datagram):
+            global datagramlist
             packedInt = datagram[0]
             for num in range(1,4):
-                print "NUM", num
                 packedInt = packedInt + datagram[num]
-            print packedInt
             intValue = struct.unpack(">i", packedInt)
             print "Unpacked Integer:", intValue #output is tuple
-            #now we need to delete this from overall message
+            datagramlist = datagramlist.replace(datagramlist[0:4],'')
+            print "DATAGRAMLIST", datagramlist #is cut from message
             
         def unpackFloat(position, datagram):
             print "unpacking float at position", position
@@ -32,11 +36,10 @@ class EchoUDP(DatagramProtocol):
             stringValue = oscValues[position]
             print "STRING VALUE AT ", position, ":", stringValue
         
-        datagramlist = data
         numberOfInts = 0
         numberOfFloats = 0
         numberOfStrings = 0
-                
+                        
         typeTagRegex = re.compile('\,[\S]*?\0') #Not sure why these need
         addressRegex = re.compile('\/[\S]*?\,')  #to be compiled every time...
 
@@ -52,7 +55,7 @@ class EchoUDP(DatagramProtocol):
         if searchOscTypetag:
             searchOscTypetag = searchOscTypetag.group()
             print "Typetag: ", searchOscTypetag
-            typeTagLength = (len(searchOscTypetag)-2)
+            typeTagLength = (len(searchOscTypetag)-1)
             print typeTagLength
             
             datagramlist = datagramlist.replace(searchOscTypetag, '')
