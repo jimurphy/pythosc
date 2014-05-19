@@ -12,7 +12,7 @@ class EchoUDP(DatagramProtocol):
     def datagramReceived(self, data, address):
         global datagramlist
         datagramlist = data
-
+        print "DATAGRAMLIST", datagramlist
         def unpackInt(position, datagram):
             global datagramlist
             packedInt = datagram[0]
@@ -21,7 +21,6 @@ class EchoUDP(DatagramProtocol):
             intValue = struct.unpack(">i", packedInt)
             print "Unpacked Integer:", intValue #output is tuple
             datagramlist = datagramlist.replace(datagramlist[0:4],'')
-            print "DATAGRAMLIST", datagramlist #is cut from message
             
         def unpackFloat(position, datagram):
             print "unpacking float at position", position
@@ -40,7 +39,7 @@ class EchoUDP(DatagramProtocol):
         numberOfFloats = 0
         numberOfStrings = 0
                         
-        typeTagRegex = re.compile('\,[\S]*?\0') #Not sure why these need
+        typeTagRegex = re.compile('\,[\S]*?\J') #Not sure why these need
         addressRegex = re.compile('\/[\S]*?\,')  #to be compiled every time...
 
         matchOscAddress = re.match(addressRegex, datagramlist, flags=0)
@@ -55,10 +54,9 @@ class EchoUDP(DatagramProtocol):
         if searchOscTypetag:
             searchOscTypetag = searchOscTypetag.group()
             print "Typetag: ", searchOscTypetag
-            typeTagLength = (len(searchOscTypetag)-1)
+            typeTagLength = (len(searchOscTypetag))
             print typeTagLength
-            
-            datagramlist = datagramlist.replace(searchOscTypetag, '')
+            datagramlist = datagramlist[(typeTagLength+(4-typeTagLength%4)):]
             for num in range(0, typeTagLength):
                 if searchOscTypetag[num] == 'i':
                     print "INT TYPE FOUND AT", num
@@ -67,11 +65,11 @@ class EchoUDP(DatagramProtocol):
                 if searchOscTypetag[num] == 'f':
                     print "FLOAT TYPE FOUND AT", num
                     numberOfFloats = numberOfFloats + 1
-                    unpackFloat(num, datagramlist)
+                    #unpackFloat(num, datagramlist)
                 if searchOscTypetag[num] == 's':
                     print "STRING TYPE FOUND AT", num
                     numberOfStrings = numberOfStrings + 1
-                    unpackString(num, datagramlist)
+                    #unpackString(num, datagramlist)
         
 
 def main():    

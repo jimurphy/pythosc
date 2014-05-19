@@ -5,7 +5,7 @@ class OSCClient:
     IPAddress = "127.0.0.1"
     Port = 8001
     Address = "/test"
-    Typetag = "i"
+    Typetag = "iiii"
     oscMessage = ""
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     
@@ -22,7 +22,7 @@ class OSCClient:
         messageLength = len(address)
         msgAppendAmount = (4-messageLength%4)
         for num in range(0, msgAppendAmount):
-           address = address + "\0"
+           address = address + "J"
         self.oscMessage = self.oscMessage + address  
            
     def SetTypetag(self, typetag):       
@@ -32,7 +32,7 @@ class OSCClient:
         if typetagAppendAmount == 0:
             typetagAppendAmount = 4
         for num in range(0, typetagAppendAmount):
-            typetag = typetag + "\0"
+            typetag = typetag + "J"
         self.oscMessage = self.oscMessage + typetag  
     
     def AddInt(self, int):
