@@ -24,6 +24,13 @@ class EchoUDP(DatagramProtocol):
             
         def unpackFloat(position, datagram):
             print "unpacking float at position", position
+            global datagramlist
+            packedFloat = datagram[0]
+            for num in range(1,4):
+                packedFloat = packedFloat + datagram[num]
+            floatValue = struct.unpack(">f", packedFloat)
+            print "Unpacked Float:", floatValue #output is tuple
+            datagramlist = datagramlist.replace(datagramlist[0:4],'')
 
         def unpackString(position, datagram):
             print "unpacking string at position", position
@@ -65,7 +72,7 @@ class EchoUDP(DatagramProtocol):
                 if searchOscTypetag[num] == 'f':
                     print "FLOAT TYPE FOUND AT", num
                     numberOfFloats = numberOfFloats + 1
-                    #unpackFloat(num, datagramlist)
+                    unpackFloat(num, datagramlist)
                 if searchOscTypetag[num] == 's':
                     print "STRING TYPE FOUND AT", num
                     numberOfStrings = numberOfStrings + 1
