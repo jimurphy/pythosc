@@ -22,7 +22,7 @@ class OSCClient:
         messageLength = len(address)
         msgAppendAmount = (4-messageLength%4)
         for num in range(0, msgAppendAmount):
-           address = address + "J"
+           address = address + "\0"
         self.oscMessage = self.oscMessage + address  
            
     def SetTypetag(self, typetag):       
@@ -32,7 +32,7 @@ class OSCClient:
         if typetagAppendAmount == 0:
             typetagAppendAmount = 4
         for num in range(0, typetagAppendAmount):
-            typetag = typetag + "J"
+            typetag = typetag + "\0"
         self.oscMessage = self.oscMessage + typetag  
     
     def AddInt(self, int):

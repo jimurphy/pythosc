@@ -39,7 +39,7 @@ class EchoUDP(DatagramProtocol):
         numberOfFloats = 0
         numberOfStrings = 0
                         
-        typeTagRegex = re.compile('\,[\S]*?\J') #Not sure why these need
+        typeTagRegex = re.compile('\,[\S]*?\\0') #Not sure why these need
         addressRegex = re.compile('\/[\S]*?\,')  #to be compiled every time...
 
         matchOscAddress = re.match(addressRegex, datagramlist, flags=0)
