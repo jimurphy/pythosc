@@ -16,6 +16,7 @@ class EchoUDP(DatagramProtocol):
         def unpackInt(position, datagram):
             global datagramlist
             packedInt = datagram[0]
+            print "datagramlist in fun", datagramlist
             for num in range(1,4):
                 packedInt = packedInt + datagram[num]
             intValue = struct.unpack(">i", packedInt)
@@ -38,9 +39,10 @@ class EchoUDP(DatagramProtocol):
             nullRegex = re.sub(r'\0{1,}','/',nullRegex) #Many nulls to one slash
             oscValues = nullRegex.split("/") # /x/y/z into [x, y, z]
             del oscValues[0] # Unsure why.
-            
-            stringValue = oscValues[position]
-            print "STRING VALUE AT ", position, ":", stringValue
+            print "POSITION", position
+            print "OSCVALUES", oscValues
+            #stringValue = oscValues[position]
+            #print "STRING VALUE AT ", position, ":", stringValue
         
         numberOfInts = 0
         numberOfFloats = 0
@@ -61,8 +63,8 @@ class EchoUDP(DatagramProtocol):
         if searchOscTypetag:
             searchOscTypetag = searchOscTypetag.group()
             print "Typetag: ", searchOscTypetag
-            typeTagLength = (len(searchOscTypetag))
-            print typeTagLength
+            typeTagLength = (len(searchOscTypetag) - 1)
+            print "Typetag length", typeTagLength
             datagramlist = datagramlist[(typeTagLength+(4-typeTagLength%4)):]
             for num in range(0, typeTagLength):
                 if searchOscTypetag[num] == 'i':
@@ -76,7 +78,7 @@ class EchoUDP(DatagramProtocol):
                 if searchOscTypetag[num] == 's':
                     print "STRING TYPE FOUND AT", num
                     numberOfStrings = numberOfStrings + 1
-                    #unpackString(num, datagramlist)
+                    unpackString(num, datagramlist)
         
 
 def main():    
