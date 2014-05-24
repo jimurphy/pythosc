@@ -5,7 +5,7 @@ class OSCClient:
     IPAddress = "127.0.0.1"
     Port = 8001
     Address = "/test"
-    Typetag = "iiii"
+    Typetag = "i"
     oscMessage = ""
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     

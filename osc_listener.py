@@ -12,19 +12,19 @@ class EchoUDP(DatagramProtocol):
     def datagramReceived(self, data, address):
         global datagramlist
         datagramlist = data
-        print "DATAGRAMLIST", datagramlist
-        def unpackInt(position, datagram):
+        
+        #Int is first 4 bytes. Combine, unpack, and remove from the datagram.
+        def unpackInt(datagram):
             global datagramlist
             packedInt = datagram[0]
-            print "datagramlist in fun", datagramlist
             for num in range(1,4):
                 packedInt = packedInt + datagram[num]
             intValue = struct.unpack(">i", packedInt)
             print "Unpacked Integer:", intValue #output is tuple
             datagramlist = datagramlist.replace(datagramlist[0:4],'')
-            
-        def unpackFloat(position, datagram):
-            print "unpacking float at position", position
+        
+        #Similar to unpackInt. Combines, unpacks, and then removes from datagram    
+        def unpackFloat(datagram):
             global datagramlist
             packedFloat = datagram[0]
             for num in range(1,4):
@@ -33,22 +33,25 @@ class EchoUDP(DatagramProtocol):
             print "Unpacked Float:", floatValue #output is tuple
             datagramlist = datagramlist.replace(datagramlist[0:4],'')
 
-        def unpackString(position, datagram):
-            print "unpacking string at position", position
-            nullRegex = re.sub(r',','',datagram) #Remove comma
-            nullRegex = re.sub(r'\0{1,}','/',nullRegex) #Many nulls to one slash
-            oscValues = nullRegex.split("/") # /x/y/z into [x, y, z]
-            del oscValues[0] # Unsure why.
-            print "POSITION", position
-            print "OSCVALUES", oscValues
-            #stringValue = oscValues[position]
-            #print "STRING VALUE AT ", position, ":", stringValue
+        def unpackString(datagram):
+            global datagramlist
+            print "unpacking string"
+            newstring = ''
+            for x in range(0, len(datagram)):
+                if datagram[x] != "\0":
+                    newstring = newstring + datagram[x]
+                else:
+                    stringLen = len(newstring)
+                    paddedStringLen = 4-stringLen%4
+                    print "UNPACKED STRING:", newstring
+                    datagramlist = datagramlist.replace(datagramlist[0:paddedStringLen+stringLen],'')
+                    break
         
         numberOfInts = 0
         numberOfFloats = 0
         numberOfStrings = 0
                         
-        typeTagRegex = re.compile('\,[\S]*?\\0') #Not sure why these need
+        typeTagRegex = re.compile('\,[\S]*?\0') #Not sure why these need
         addressRegex = re.compile('\/[\S]*?\,')  #to be compiled every time...
 
         matchOscAddress = re.match(addressRegex, datagramlist, flags=0)
@@ -63,22 +66,21 @@ class EchoUDP(DatagramProtocol):
         if searchOscTypetag:
             searchOscTypetag = searchOscTypetag.group()
             print "Typetag: ", searchOscTypetag
-            typeTagLength = (len(searchOscTypetag) - 1)
-            print "Typetag length", typeTagLength
+            typeTagLength = (len(searchOscTypetag) - 1) #Accounts for comma(??)
             datagramlist = datagramlist[(typeTagLength+(4-typeTagLength%4)):]
             for num in range(0, typeTagLength):
                 if searchOscTypetag[num] == 'i':
                     print "INT TYPE FOUND AT", num
                     numberOfInts = numberOfInts + 1
-                    unpackInt(num, datagramlist)
+                    unpackInt(datagramlist)
                 if searchOscTypetag[num] == 'f':
                     print "FLOAT TYPE FOUND AT", num
                     numberOfFloats = numberOfFloats + 1
-                    unpackFloat(num, datagramlist)
+                    unpackFloat(datagramlist)
                 if searchOscTypetag[num] == 's':
                     print "STRING TYPE FOUND AT", num
                     numberOfStrings = numberOfStrings + 1
-                    unpackString(num, datagramlist)
+                    unpackString(datagramlist)
         
 
 def main():    
