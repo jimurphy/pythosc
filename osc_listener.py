@@ -6,46 +6,54 @@ import re
 import struct
 
 datagramlist = ''
+messageContents = []
 
 class EchoUDP(DatagramProtocol):
     
     def datagramReceived(self, data, address):
         global datagramlist
+        global messageContents
         datagramlist = data
         
         #Int is first 4 bytes. Combine, unpack, and remove from the datagram.
         def unpackInt(datagram):
             global datagramlist
+            global messageContents
             packedInt = datagram[0]
             for num in range(1,4):
                 packedInt = packedInt + datagram[num]
             intValue = struct.unpack(">i", packedInt)
             print "Unpacked Integer:", intValue #output is tuple
+            messageContents.append(intValue)
             datagramlist = datagramlist.replace(datagramlist[0:4],'')
         
         #Similar to unpackInt. Combines, unpacks, and then removes from datagram    
         def unpackFloat(datagram):
             global datagramlist
+            global messageContents
             packedFloat = datagram[0]
             for num in range(1,4):
                 packedFloat = packedFloat + datagram[num]
             floatValue = struct.unpack(">f", packedFloat)
             print "Unpacked Float:", floatValue #output is tuple
+            messageContents.append(floatValue)
             datagramlist = datagramlist.replace(datagramlist[0:4],'')
 
         def unpackString(datagram):
             global datagramlist
-            print "unpacking string"
-            newstring = ''
+            global messageContents
+            stringValue = ''
             for x in range(0, len(datagram)):
                 if datagram[x] != "\0":
-                    newstring = newstring + datagram[x]
+                    stringValue = stringValue + datagram[x]
                 else:
-                    stringLen = len(newstring)
+                    stringLen = len(stringValue)
                     paddedStringLen = 4-stringLen%4
-                    print "UNPACKED STRING:", newstring
+                    print "Unpacked String:", stringValue
                     datagramlist = datagramlist.replace(datagramlist[0:paddedStringLen+stringLen],'')
                     break
+            messageContents.append(stringValue)
+
         
         numberOfInts = 0
         numberOfFloats = 0
@@ -70,17 +78,15 @@ class EchoUDP(DatagramProtocol):
             datagramlist = datagramlist[(typeTagLength+(4-typeTagLength%4)):]
             for num in range(0, typeTagLength):
                 if searchOscTypetag[num] == 'i':
-                    print "INT TYPE FOUND AT", num
                     numberOfInts = numberOfInts + 1
                     unpackInt(datagramlist)
                 if searchOscTypetag[num] == 'f':
-                    print "FLOAT TYPE FOUND AT", num
                     numberOfFloats = numberOfFloats + 1
                     unpackFloat(datagramlist)
                 if searchOscTypetag[num] == 's':
-                    print "STRING TYPE FOUND AT", num
                     numberOfStrings = numberOfStrings + 1
                     unpackString(datagramlist)
+            print "MESSAGE CONTENTS", messageContents     
         
 
 def main():    
