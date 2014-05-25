@@ -44,7 +44,7 @@ class OSCClient:
         else:
             print "ERROR. Argument count greater than what typetag specifies."
             self.canSend = False
-    
+
     def AddFloat(self, float):
         if self.argumentCount < (self.typetagLength - 1):
             float = struct.pack(">f", float)
